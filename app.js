@@ -8,7 +8,7 @@ const axios = require('axios')
 app.use(function (req, res, next) {
   res.set('x-timestamp', Date.now())
   res.set('x-powered-by', 'cyclic.sh')
-  console.log(`[${new Date().toISOString()}] ${req.ip} ${req.method} ${req.path}`);
+  // console.log(`[${new Date().toISOString()}] ${req.ip} ${req.method} ${req.path}`);
   next();
 });
 
@@ -27,18 +27,31 @@ app.use(express.static('public', options))
 
 // #############################################################################
 // Catch all handler for all other request.
-app.use('*', (req,res) => {
-  res.json({
-      at: new Date().toISOString(),
-      method: req.method,
-      hostname: req.hostname,
-      ip: req.ip,
-      query: req.query,
-      headers: req.headers,
-      cookies: req.cookies,
-      params: req.params
-    })
-    .end()
-})
+// app.use('*', (req,res) => {
+//   res.json({
+//       at: new Date().toISOString(),
+//       method: req.method,
+//       hostname: req.hostname,
+//       ip: req.ip,
+//       query: req.query,
+//       headers: req.headers,
+//       cookies: req.cookies,
+//       params: req.params
+//     })
+//     .end()
+// })
+
+app.get('/birb', async (req,res)=>{
+  try {const response = await axios.get('https://xeno-canto.org/api/2/recordings?query=q:A+len:12')
+        const data = response.data.recordings
+        const dataArray = Object.values(data)
+        const randomIndex = Math.floor(Math.random() * dataArray.length);
+        const name = dataArray[randomIndex]?.en ?? ''
+        const sound = dataArray[randomIndex].file
+        res.send({sound, name})
+      }
+    catch (error) {
+        (console.error(error));
+      }});
 
 module.exports = app
